@@ -19,6 +19,7 @@
     <div class="status" id="gpsmsg" role="status" aria-live="polite"></div>
     <p class="muted">Ou digite o endereço:</p>
     <div class="grid">
+      <div class="row2"><div><label for="cep">CEP (opcional)</label><input type="text" id="cep" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="00000-000" aria-describedby="hcep"><div class="hint" id="hcep">Digite o CEP e preenchemos a rua, o bairro e a cidade.</div></div></div>
       <div><label for="logradouro">Rua, avenida ou travessa</label><input type="text" id="logradouro" autocomplete="off"></div>
       <div class="row2">
         <div><label for="numero">Número (aproximado)</label><input type="text" id="numero" inputmode="numeric" autocomplete="off"></div>
@@ -98,13 +99,22 @@ async function shrink(file,max=1600){try{const im=await createImageBitmap(file);
 // Passo 1
 $("gps").onclick=()=>{ if(!navigator.geolocation){$("gpsmsg").textContent="Seu aparelho não oferece localização. Digite o endereço.";return}
   $("gpsmsg").textContent="Buscando localização…";
-  navigator.geolocation.getCurrentPosition(p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};$("gpsmsg").className="status ok";$("gpsmsg").textContent="✔ Localização capturada. Se quiser, complete o endereço abaixo."},
+  navigator.geolocation.getCurrentPosition(async p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};$("gpsmsg").className="status ok";$("gpsmsg").textContent="✔ Localização capturada. Buscando o endereço…";
+   try{const r=await fetch(`/api/geocode?lat=${pos.lat}&lon=${pos.lon}`,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw 0;const a=await r.json();
+    for(const k of["cep","logradouro","numero","bairro","cidade","uf"]){if(a[k]&&!$(k).value.trim())$(k).value=a[k]}
+    $("gpsmsg").textContent="✔ Localização capturada e endereço preenchido. Confira e corrija se precisar."}
+   catch{$("gpsmsg").textContent="✔ Localização capturada. Não conseguimos descobrir o endereço: preencha abaixo."}},
    ()=>{$("gpsmsg").className="status err";$("gpsmsg").textContent="Não conseguimos a localização. Digite o endereço."},{enableHighAccuracy:true,timeout:15000})};
+$("cep").addEventListener("input",async()=>{let d=$("cep").value.replace(/\D/g,"").slice(0,8);$("cep").value=d.length>5?d.slice(0,5)+"-"+d.slice(5):d;if(d.length<8){$("hcep").className="hint";$("hcep").textContent="Digite o CEP e preenchemos a rua, o bairro e a cidade.";return}
+  $("hcep").className="hint";$("hcep").textContent="Buscando o CEP…";
+  try{const r=await fetch("/api/cep/"+d,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error(r.status===404?"CEP não encontrado. Preencha à mão.":"Não conseguimos buscar o CEP agora. Preencha à mão.");const a=await r.json();
+   for(const k of["logradouro","bairro","cidade","uf"]){if(a[k])$(k).value=a[k]}$("hcep").className="hint";$("hcep").textContent="✔ Endereço preenchido pelo CEP. Informe o número e confira."}
+  catch(e){$("hcep").className="hint bad";$("hcep").textContent=e.message||"Não conseguimos buscar o CEP. Preencha à mão."}});
 $("fatura").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("fmsg").className="status";$("fmsg").textContent="Lendo a conta… alguns segundos.";
   try{const fd=new FormData();fd.append("file",await shrink(f,2000),"conta.jpg");const r=await fetch("/extract-address",{method:"POST",body:fd,signal:AbortSignal.timeout(60000)});
    if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||"erro "+r.status);const j=await r.json();const a=j.address||{};
    if(!j.company){$("fmsg").className="status err";$("fmsg").textContent="Não reconhecemos essa conta. Digite o endereço.";return}
-   $("logradouro").value=a.logradouro||"";$("numero").value=a.numero||"";$("bairro").value=a.bairro||"";$("cidade").value=a.cidade||"";$("uf").value=a.uf||"";origem="foto_fatura";
+   $("cep").value=a.cep||"";$("logradouro").value=a.logradouro||"";$("numero").value=a.numero||"";$("bairro").value=a.bairro||"";$("cidade").value=a.cidade||"";$("uf").value=a.uf||"";origem="foto_fatura";
    const d=j.fields_to_check||[];$("fmsg").className="status "+(d.length?"err":"ok");$("fmsg").textContent=d.length?"Lemos a conta, mas confira: "+d.join(", ")+".":"✔ Endereço lido. Confira se está certo."}
   catch(err){$("fmsg").className="status err";$("fmsg").textContent="Não foi possível ler a foto. Digite o endereço."}};
 $("n1").onclick=()=>{const uf=$("uf").value.trim().toUpperCase();$("e1").textContent="";
@@ -132,7 +142,7 @@ function mostrarResumo(){const loc=[$("logradouro").value.trim(),$("numero").val
 $("v2").onclick=()=>ir(2);
 $("enviar").onclick=async()=>{$("e3").textContent="";if(!$("categoria").value)return $("e3").textContent="Escolha o tipo do problema.";
   $("enviar").disabled=true;const fd=new FormData();
-  for(const k of["logradouro","numero","bairro","cidade","uf","descricao","categoria"])fd.append(k,$(k).value.trim());
+  for(const k of["cep","logradouro","numero","bairro","cidade","uf","descricao","categoria"])fd.append(k,$(k).value.trim());
   fd.set("uf",$("uf").value.trim().toUpperCase());fd.append("usuario_id",uid);fd.append("origem_endereco",origem);if(pos){fd.append("lat",pos.lat);fd.append("lon",pos.lon)}if(fotoProb)fd.append("foto",fotoProb,"problema.jpg");
   try{const r=await fetch("/api/reportes",{method:"POST",body:fd,signal:AbortSignal.timeout(60000)});const j=await r.json();if(!r.ok)throw new Error(j.detail||"erro "+r.status);
    const m=store.get("cv_meus",[]);m.unshift(j.codigo);store.set("cv_meus",m.slice(0,10));

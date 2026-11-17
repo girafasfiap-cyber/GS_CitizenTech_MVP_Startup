@@ -24,7 +24,7 @@ from starlette.staticfiles import StaticFiles
 
 from citizen_vision.service import ServiceError, extract_from_bytes
 
-from . import db, geo, triagem
+from . import db, geo, geocode, triagem
 
 log = logging.getLogger("cidadeviva")
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -127,6 +127,27 @@ async def api_triagem(request: Request):
     res = await run_in_threadpool(triagem.classificar, desc)
     cat = triagem.categorias().get(res["categoria"]) if res["categoria"] else None
     return j({**res, "categoria_nome": cat["nome"] if cat else None, "limiar": triagem.LIMIAR})
+
+
+# ---------- preenchimento de endereço ----------
+async def api_cep(request: Request):
+    if (r := limite(request, "cep", 30)):
+        return r
+    cep = geocode.limpar_cep(request.path_params["cep"])
+    if not cep:
+        return j({"detail": "CEP deve ter 8 números."}, 400)
+    res = await run_in_threadpool(geocode.viacep, cep)
+    return j(res) if res else j({"detail": "CEP não encontrado."}, 404)
+
+
+async def api_geocode(request: Request):
+    if (r := limite(request, "geo", 15)):
+        return r
+    lat, lon = _num(request.query_params.get("lat")), _num(request.query_params.get("lon"))
+    if lat is None or lon is None or not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return j({"detail": "Coordenadas inválidas."}, 400)
+    res = await run_in_threadpool(geocode.reverso, lat, lon)
+    return j(res) if res else j({"detail": "Não foi possível descobrir o endereço."}, 404)
 
 
 # ---------- reportes ----------
@@ -355,6 +376,7 @@ app = Starlette(
         Route("/", pagina), Route("/admin", pagina), Route("/painel", pagina), Route("/health", health),
         Route("/extract-address", extract_address, methods=["POST"]),
         Route("/api/triagem", api_triagem, methods=["POST"]),
+        Route("/api/cep/{cep}", api_cep), Route("/api/geocode", api_geocode),
         Route("/api/reportes", criar_reporte, methods=["POST"]),
         Route("/api/reportes/{codigo}", consultar),
         Route("/api/admin/reportes", listar),
