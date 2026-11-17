@@ -15,7 +15,7 @@ def novo(client, **extra):
 
 
 def test_saude_e_paginas(client):
-    assert client.get("/health").json() == {"status": "ok"}
+    assert client.get("/health").json()["status"] == "ok"
     assert "CidadeViva" in client.get("/").text
     assert client.get("/").headers["x-content-type-options"] == "nosniff"
 
@@ -122,3 +122,13 @@ def test_stats(client):
 def test_limite_de_requisicoes(client):
     codigos = [novo(client).status_code for _ in range(12)]
     assert 429 in codigos
+
+
+def test_pagina_tem_cep_e_conferencia_da_conta(client):
+    html = client.get("/").text
+    assert 'id="cep"' in html and "CEP (opcional)" in html
+    assert 'id="s1b"' in html and "Confira o endereço da conta" in html
+
+
+def test_health_informa_versao(client):
+    assert "versao" in client.get("/health").json()

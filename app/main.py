@@ -94,7 +94,7 @@ async def pagina(request: Request):
 
 
 async def health(request: Request):
-    return j({"status": "ok"})
+    return j({"status": "ok", "versao": os.getenv("APP_VERSION", "dev")[:7]})
 
 
 # ---------- Visão ----------

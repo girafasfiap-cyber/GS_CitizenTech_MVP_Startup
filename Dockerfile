@@ -10,6 +10,8 @@ COPY seeds seeds
 COPY static static
 RUN useradd -m app && mkdir -p /home/data && chown -R app /home/data
 USER app
+ARG GIT_SHA=dev
+ENV APP_VERSION=$GIT_SHA
 ENV DATA_DIR=/home/data PORT=8000 WEBSITES_PORT=8000
 EXPOSE 8000
 HEALTHCHECK CMD python -c "import urllib.request,os;urllib.request.urlopen('http://localhost:'+os.getenv('PORT','8000')+'/health')"
