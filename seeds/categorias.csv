@@ -1,0 +1,8 @@
+categoria_id,codigo,nome,descricao,orgao_sugerido,prioridade_base
+1,pavimento,Pavimento e buracos,"Buracos, afundamentos e reparos de asfalto em vias públicas",Subprefeitura (SMSUB),3
+2,iluminacao,Iluminação pública,"Lâmpada apagada, acesa de dia, poste danificado",ILUME / SMUL,3
+3,limpeza_urbana,Limpeza urbana e descarte,"Lixo acumulado, entulho, descarte irregular, varrição",SMSUB / Limpurb,2
+4,arvores_areas_verdes,Árvores e áreas verdes,"Poda, remoção de árvore, capinação e roçada de praças e canteiros",Subprefeitura (SMSUB),2
+5,calcadas_acessibilidade,Calçadas e acessibilidade,"Calçada quebrada, falta de rampa, obstáculos à circulação de pedestres",Subprefeitura (SMSUB),3
+6,sinalizacao_semaforo,Sinalização e semáforos,"Semáforo apagado ou com defeito, botoeira de pedestre, placas e faixas",CET / SMT,4
+7,drenagem,Drenagem e alagamentos,"Bueiro/boca de lobo entupido, alagamento, córrego",SMSUB / SIURB,4

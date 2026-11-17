@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel · CidadeViva</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><strong>CidadeViva</strong><nav aria-label="Principal"><a href="/">Reportar</a><a href="/painel">Painel</a><a href="/admin">Atendente</a></nav></header>
+<main>
+  <h1>Painel de zeladoria</h1>
+  <section class="card" aria-labelledby="a1"><h2 id="a1">Reportes recebidos pelo CidadeViva</h2>
+    <div id="kpi" class="muted">Carregando…</div><div id="cats"></div></section>
+  <section class="card" aria-labelledby="a2"><h2 id="a2">Demanda histórica real (SP156)</h2>
+    <div id="dem" class="muted">Carregando…</div></section>
+</main>
+<script>
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ST={novo:"aguardando conferência",triado:"na fila do robô",enviado_prefeitura:"enviados à prefeitura",resolvido:"resolvidos"};
+(async()=>{const s=await (await fetch("/api/stats")).json();
+ $kpi=document.getElementById("kpi");
+ $kpi.innerHTML=s.total?`<b>${s.total}</b> reportes · `+Object.entries(s.por_status).map(([k,v])=>`${v} ${ST[k]||k}`).join(" · ")+(s.taxa_revisao_humana!=null?`<br>Foram para revisão humana: ${(s.taxa_revisao_humana*100).toFixed(0)}%`:""):"Ainda não há reportes.";
+ const mx=Math.max(1,...s.por_categoria.map(c=>c.total));
+ document.getElementById("cats").innerHTML=s.por_categoria.map(c=>`<p style="margin:8px 0 2px">${esc(c.nome)} — ${c.total}</p><div class="bar" role="img" aria-label="${esc(c.nome)}: ${c.total}"><i style="width:${c.total/mx*100}%"></i></div>`).join("");
+ const d=await (await fetch("/api/demanda")).json(),el=document.getElementById("dem");
+ el.innerHTML=d.disponivel?`<p>${esc(d.fonte)}. Subprefeituras e categorias com mais solicitações em 2026:</p><table><tr><th>Subprefeitura</th><th>Categoria</th><th>Solicitações</th></tr>${d.ranking.map(r=>`<tr><td>${esc(r.subprefeitura)}</td><td>${esc(r.categoria)}</td><td>${r.solicitacoes.toLocaleString("pt-BR")}</td></tr>`).join("")}</table>`:"Dados do pipeline ainda não conectados a este servidor.";
+})();
+</script></body></html>

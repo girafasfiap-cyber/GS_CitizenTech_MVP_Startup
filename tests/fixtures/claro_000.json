@@ -1,0 +1,12 @@
+{
+  "company": "claro",
+  "hard": false,
+  "address": {
+    "logradouro": "RUA QUINZE DE NOVEMBRO",
+    "numero": "442",
+    "bairro": "TATUAPE",
+    "cidade": "PORTO ALEGRE",
+    "uf": "RS",
+    "cep": "94627-341"
+  }
+}

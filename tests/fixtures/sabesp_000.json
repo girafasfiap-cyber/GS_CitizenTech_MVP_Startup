@@ -1,0 +1,12 @@
+{
+  "company": "sabesp",
+  "hard": true,
+  "address": {
+    "logradouro": "RUA AUGUSTA",
+    "numero": "3000",
+    "bairro": "VILA MARIANA",
+    "cidade": "CURITIBA",
+    "uf": "PR",
+    "cep": "59798-139"
+  }
+}

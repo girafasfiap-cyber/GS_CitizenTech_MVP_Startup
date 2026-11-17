@@ -1,0 +1,12 @@
+{
+  "company": "enel",
+  "hard": true,
+  "address": {
+    "logradouro": "RUA SETE DE SETEMBRO",
+    "numero": "820",
+    "bairro": "IPIRANGA",
+    "cidade": "BELO HORIZONTE",
+    "uf": "MG",
+    "cep": "24435-235"
+  }
+}

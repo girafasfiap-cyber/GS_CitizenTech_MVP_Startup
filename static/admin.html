@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atendente · CidadeViva</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><strong>CidadeViva · Atendente</strong><nav aria-label="Principal"><a href="/">Reportar</a><a href="/painel">Painel</a><a href="/admin">Atendente</a></nav></header>
+<main>
+  <section class="card" id="login"><h1>Área do atendente</h1>
+    <label for="key">Chave de acesso</label><input type="password" id="key" autocomplete="current-password">
+    <div class="actions"><button class="btn" id="entrar">Entrar</button></div><div class="status err" id="le" role="alert"></div></section>
+  <div id="app" hidden>
+    <section class="card"><h2>Fila do robô (RPA)</h2>
+      <p class="muted">Reportes já conferidos, prontos para o robô registrar no portal da prefeitura. O robô lê <code>reclamacoes.csv</code> e devolve <code>reclamacoes_resultado.csv</code>.</p>
+      <div class="actions"><button class="btn secondary" id="baixar">⬇ Baixar reclamacoes.csv</button>
+      <label class="btn secondary" for="up" style="cursor:pointer">⬆ Enviar reclamacoes_resultado.csv</label><input class="sr" id="up" type="file" accept=".csv"></div><div class="status" id="rm" role="status" aria-live="polite"></div></section>
+    <section class="card"><h2>Reportes</h2>
+      <label for="filtro">Mostrar</label><select id="filtro"><option value="novo">Aguardando conferência</option><option value="triado">Na fila do robô</option><option value="enviado_prefeitura">Enviados</option><option value="">Todos</option></select>
+      <div id="lista" style="margin-top:12px"></div></section>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CATS={pavimento:"Pavimento e buracos",iluminacao:"Iluminação pública",limpeza_urbana:"Limpeza urbana e descarte",arvores_areas_verdes:"Árvores e áreas verdes",calcadas_acessibilidade:"Calçadas e acessibilidade",sinalizacao_semaforo:"Sinalização e semáforos",drenagem:"Drenagem e alagamentos"};
+let K=sessionStorage.getItem("cv_key")||"";const H=()=>({"X-API-Key":K});
+async function carregar(){const q=$("filtro").value;const r=await fetch("/api/admin/reportes"+(q?"?status="+q:""),{headers:H()});
+ if(r.status===401||r.status===503){sessionStorage.removeItem("cv_key");$("app").hidden=true;$("login").hidden=false;$("le").textContent=r.status===503?"Administração desativada neste servidor.":"Chave incorreta.";return}
+ $("login").hidden=true;$("app").hidden=false;const js=await r.json();
+ $("lista").innerHTML=js.length?js.map(x=>`<div class="card" style="margin:8px 0"><b>${esc(x.codigo)}</b> <span class="badge ${esc(x.status)}">${esc(x.status)}</span><br>
+  <span class="muted">${esc(x.local)} ${x.subprefeitura?"· "+esc(x.subprefeitura):""}</span><p>${esc(x.descricao)}</p>
+  ${x.texto_formal?`<p class="muted">Texto formal: ${esc(x.texto_formal)}</p>`:""}
+  <p class="muted">IA sugeriu: ${esc(CATS[x.ia_categoria]||"—")} (confiança ${x.ia_confianca??"—"}) · Categoria atual: ${esc(x.categoria_nome||"")}${x.protocolo?" · Protocolo "+esc(x.protocolo):""}${x.erro_envio?" · ⚠ "+esc(x.erro_envio):""}</p>
+  ${x.foto?`<p><a href="${esc(x.foto)}" target="_blank" rel="noopener">Ver foto</a></p>`:""}
+  ${x.status==="novo"?`<div class="row2"><select id="c-${esc(x.codigo)}" aria-label="Categoria">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${k===x.categoria?"selected":""}>${v}</option>`).join("")}</select><button class="btn small" data-ap="${esc(x.codigo)}">Aprovar para o robô</button></div>`:""}</div>`).join(""):"<p class='muted'>Nada por aqui.</p>"}
+$("lista").onclick=async e=>{const c=e.target.dataset.ap;if(!c)return;await fetch(`/api/admin/reportes/${c}/aprovar`,{method:"POST",headers:{...H(),"Content-Type":"application/json"},body:JSON.stringify({categoria:$("c-"+c).value})});carregar()};
+$("filtro").onchange=carregar;
+$("entrar").onclick=()=>{K=$("key").value;sessionStorage.setItem("cv_key",K);$("le").textContent="";carregar()};
+$("baixar").onclick=async()=>{const r=await fetch("/rpa/fila.csv",{headers:H()});const b=await r.blob();const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="reclamacoes.csv";a.click()};
+$("up").onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=await fetch("/rpa/resultado",{method:"POST",headers:H(),body:await f.text()});const j=await r.json();$("rm").textContent=r.ok?`Enviados: ${j.enviados} · Falhas: ${j.falhas} · Ignorados: ${j.ignorados}`:(j.detail||"erro");carregar()};
+if(K)carregar();
+</script></body></html>
