@@ -2,7 +2,7 @@ starlette>=0.37
 uvicorn>=0.29
 python-multipart>=0.0.9
 opencv-python-headless>=4.8
-numpy>=1.24
+numpy>=2.5.4
 Pillow>=10.0
 pytesseract>=0.3.10
 # telemetria opcional (liga com APPLICATIONINSIGHTS_CONNECTION_STRING)
