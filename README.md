@@ -218,6 +218,7 @@ Cerca de US$ 13,94 por mês (aproximadamente US$ 167 por ano), quase tudo do pla
 - A prioridade depende de risco e impacto, e o prompt proíbe usar bairro, renda ou perfil.
 - **Pessoa no circuito:** confiança abaixo de 0,70 (`LIMIAR_CONFIANCA_IA`), categoria sem equivalente ou revisão pedida pela IA mandam o reporte para o atendente antes do envio à prefeitura. A IA nunca bloqueia o reporte do cidadão.
 - Limitação: usamos modelos gratuitos, a confiança que o modelo declara não é calibrada, e não medimos viés por região.
+- **Privacidade com modelos gratuitos:** os provedores gratuitos do OpenRouter podem guardar e usar os textos enviados para treinar modelos. Por isso só vai para o LLM o texto da descrição, sem identificador do usuário, e CPF, telefone e e-mail são mascarados antes. Nomes e endereços escritos livremente no relato não são mascarados. Em produção, a prefeitura deve usar um modelo pago com contrato de não retenção e não treinamento, ou um modelo hospedado por ela, antes de tratar dados reais.
 
 **Como verificar:** descreva "buraco grande no meio da rua" e veja a sugestão automática; descreva algo vago ("tem um problema aí") e veja o aviso de revisão.
 
@@ -264,7 +265,7 @@ Ambas as rotas exigem a chave `X-API-Key`. Reportes com `ENVIADO` e protocolo vi
 - **Dados coletados:** o relato, o endereço, uma foto opcional do problema, a localização opcional e um identificador aleatório do navegador. Não coletamos nome, e-mail nem CPF.
 - **Finalidade:** registrar o problema na prefeitura e permitir o acompanhamento pelo código.
 - **Fotos:** são decodificadas e regravadas (removem o EXIF, inclusive a localização escondida), com limite de 8 MB. A foto da conta de luz, água ou telefone nunca é guardada.
-- **PII:** CPF, telefone e e-mail são mascarados antes de qualquer texto ir para o LLM.
+- **PII:** CPF, telefone e e-mail são mascarados antes de qualquer texto ir para o LLM. Nome e endereço citados no texto livre não são mascarados, e os modelos gratuitos do OpenRouter podem reter prompts; ver a seção de IA Generativa. Se o provedor falhar, a triagem cai nas regras locais e nenhum dado sai do app.
 - **Proteções:** cabeçalhos de segurança (CSP restritivo), limite de requisições por IP, logs sem corpo e sem IP, rotas de atendente, robô e pipeline protegidas por chave.
 
 ## Acessibilidade e resiliência
