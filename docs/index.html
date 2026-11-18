@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CidadeViva — Reportou. Foi protocolado.</title>
+<meta name="description" content="CidadeViva: o cidadão reporta um problema da rua, a IA sugere o tipo, uma pessoa confere quando há dúvida e um robô registra no portal da prefeitura e devolve o protocolo. Global Solution FIAP 2026.2 · CitizenTech.">
+<meta property="og:title" content="CidadeViva — Reportou. Foi protocolado.">
+<meta property="og:description" content="Zeladoria urbana colaborativa com IA, Visão Computacional, RPA e dados reais do SP156.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#07130f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800;125,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#07130f; --surface:#0d1f18; --surface-2:#12291f; --line:#1f3a2e;
+  --fg:#e9f5ee; --muted:#93b3a3; --accent:#3fd08a; --accent-ink:#04150d; --accent-soft:rgba(63,208,138,.13);
+  --warn:#f2b84b; --pill-ink:#1a1200; --risk:#ff7a6b; --ok:#3fd08a; --chat-bg:#0a1913; --bubble-them:#12291f; --bubble-me:#1b4a36;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#f3f8f5;--surface:#fff;--surface-2:#e6f1eb;--line:#cde0d5;--fg:#0b1f16;--muted:#486356;--accent:#0f7a4a;--accent-ink:#fff;--accent-soft:rgba(15,122,74,.10);--warn:#8a5500;--pill-ink:#fff;--risk:#c23b2c;--ok:#0f7a4a;--chat-bg:#e6f1eb;--bubble-them:#fff;--bubble-me:#cfeadb;color-scheme:light}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+section{padding-block:clamp(56px,9vw,104px);border-top:1px solid var(--line)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h2{font-size:clamp(28px,4.2vw,44px);line-height:1.08;font-weight:800;font-stretch:112%;max-width:24ch}
+h3{font-size:19px;font-weight:600;font-stretch:112%;line-height:1.25}
+p{margin:0}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:16px}
+.lede{color:var(--muted);font-size:18px;max-width:64ch;margin-top:18px}
+.src{font:11.5px var(--mono);color:var(--muted);letter-spacing:.02em}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* topo */
+.top{display:flex;justify-content:space-between;align-items:center;padding-block:22px;gap:16px}
+.mark{display:flex;align-items:center;gap:10px;font:800 20px var(--display);font-stretch:125%;letter-spacing:.02em}
+.tag{font:12px var(--mono);color:var(--muted);text-align:right}
+
+/* botões */
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:12px 16px;border-radius:12px;font:600 15px var(--body);text-decoration:none;border:1px solid var(--line);color:var(--fg);background:var(--surface);transition:transform .15s,border-color .15s,background .15s}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn svg{flex:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-disabled="true"]{opacity:.6;cursor:not-allowed;pointer-events:none}
+.btn small{display:block;font:400 11.5px var(--mono);opacity:.75;letter-spacing:.02em}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr);gap:clamp(32px,6vw,72px);align-items:center;padding-block:clamp(32px,6vw,72px) clamp(56px,8vw,96px)}
+.hero h1{font-size:clamp(40px,7vw,78px);line-height:.98;font-weight:800;font-stretch:125%}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lede{font-size:19px}
+.hero-stat{display:flex;align-items:baseline;gap:14px;margin-top:34px;padding-top:22px;border-top:1px solid var(--line);max-width:540px}
+.hero-stat b{font:800 44px/1 var(--display);font-stretch:125%;white-space:nowrap}
+.hero-stat span{color:var(--muted);font-size:15px;line-height:1.45}
+.phone{background:var(--chat-bg);border:1px solid var(--line);border-radius:28px;padding:16px 14px 18px;max-width:360px;width:100%;justify-self:center;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.phone-head{display:flex;align-items:center;gap:10px;padding:4px 6px 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.phone-head .av{width:34px;height:34px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:none}
+.phone-head b{display:block;font-size:14px}
+.phone-head small{display:block;font-size:11.5px;color:var(--ok)}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.bubble{font-size:13.5px;line-height:1.45;padding:9px 11px;border-radius:12px;max-width:90%}
+.bubble.me{align-self:flex-end;background:var(--bubble-me);border-top-right-radius:3px}
+.bubble.them{align-self:flex-start;background:var(--bubble-them);border-top-left-radius:3px;border:1px solid var(--line)}
+.score{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.score b{font:800 28px/1 var(--display);font-stretch:125%;color:var(--warn)}
+.pill{font:500 10.5px var(--mono);letter-spacing:.08em;padding:3px 8px;border-radius:999px;background:var(--warn);color:var(--pill-ink)}
+.bubble ul{margin:6px 0 0;padding-left:16px}
+.bubble li{margin:2px 0}
+.bubble .meta{display:block;font:10px var(--mono);color:var(--muted);margin-bottom:4px;letter-spacing:.06em}
+.phone-cap{margin-top:14px;text-align:center}
+
+/* dor */
+.pain-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:44px}
+.stat{background:var(--surface);padding:26px 24px 22px;display:flex;flex-direction:column;gap:10px;grid-column:span 2;min-width:0}
+.stat.wide{grid-column:span 3}
+.stat .n{font:800 clamp(34px,4.6vw,52px)/1 var(--display);font-stretch:112%;font-variant-numeric:tabular-nums}
+.stat.hot .n{color:var(--accent)}
+.stat .t{font-size:15px;max-width:36ch}
+.stat .src{margin-top:auto;padding-top:6px}
+.channel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;margin-top:64px;align-items:start}
+.bars{display:flex;flex-direction:column;gap:16px}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) 78px;gap:6px 14px;align-items:center}
+.bar-row .lbl{grid-column:1/-1;font-size:14.5px}
+.track{height:12px;background:var(--surface-2);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:999px}
+.fill.quiet{background:var(--muted);opacity:.55}
+.bar-row .v{font:14px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:15px}
+.note strong{color:var(--fg);font-weight:600}
+
+/* jornada */
+.journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:48px}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.phase .when{font:12px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.phase .verb{font:800 28px/1 var(--display);font-stretch:125%;color:var(--accent)}
+.phase p{color:var(--muted);font-size:15px}
+.phase .proof{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:14px;color:var(--fg)}
+.phase .proof b{font:500 14px var(--mono)}
+.stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.chip{font:12.5px var(--mono);padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--surface)}
+
+/* dados reais */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin-top:40px}
+.kpis div{border-left:2px solid var(--line);padding:2px 0 2px 18px;min-width:0}
+.kpis b{display:block;font:800 30px/1.1 var(--display);font-stretch:112%;font-variant-numeric:tabular-nums}
+.kpis span{color:var(--muted);font-size:14.5px}
+
+/* real x simulado */
+.table-wrap{overflow-x:auto;margin-top:44px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+th,td{text-align:left;padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font:500 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.who{font-weight:600;min-width:220px}
+.real,.sim{font:13px var(--mono);white-space:nowrap}
+.real{color:var(--ok)} .sim{color:var(--warn)}
+.gap-note{margin-top:22px;color:var(--muted);max-width:72ch;font-size:15.5px}
+.gap-note strong{color:var(--fg)}
+
+/* mercado e modelo */
+.market{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;margin-top:44px;align-items:center}
+.big{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:32px 28px}
+.big b{display:block;font:800 clamp(40px,6vw,68px)/1 var(--display);font-stretch:125%;color:var(--accent)}
+.big span{display:block;margin-top:10px;color:var(--muted);font-size:15px}
+.mkt-list{display:flex;flex-direction:column;gap:22px}
+.mkt-list>div{display:grid;grid-template-columns:78px minmax(0,1fr);gap:16px}
+.mkt-list .k{font:13px var(--mono);color:var(--accent);padding-top:3px}
+.mkt-list p{color:var(--muted);font-size:15px}
+.mkt-list strong{color:var(--fg);font-weight:600}
+.proj{display:flex;align-items:flex-end;gap:14px;margin-top:22px;height:120px}
+.proj div{flex:1;background:var(--accent);border-radius:8px 8px 0 0;position:relative;min-width:0}
+.proj div span{position:absolute;top:-24px;left:0;right:0;text-align:center;font:13px var(--mono)}
+.proj div i{position:absolute;bottom:-26px;left:0;right:0;text-align:center;font:11.5px var(--mono);color:var(--muted);font-style:normal}
+.model{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:44px}
+.plan{border:1px solid var(--line);border-radius:16px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.plan.main{border-color:var(--accent);background:var(--accent-soft)}
+.plan .price{font:800 30px/1 var(--display);font-stretch:112%}
+.plan .price small{font:400 14px var(--body);color:var(--muted)}
+.plan p{color:var(--muted);font-size:15px}
+.plan .who{font:11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+
+/* ODS e equipe */
+.ods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:40px}
+.ods div{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--surface)}
+.ods b{font:800 34px/1 var(--display);color:var(--accent);display:block;margin-bottom:8px}
+.ods p{color:var(--muted);font-size:14.5px}
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:36px}
+.team div{border-left:2px solid var(--line);padding-left:16px}
+.team b{display:block;font-weight:600}
+.team span{font:13px var(--mono);color:var(--muted)}
+.close h2{max-width:20ch;font-size:clamp(32px,5vw,56px)}
+footer{padding-block:40px 56px;border-top:1px solid var(--line)}
+footer ol{margin:14px 0 0;padding-left:18px;columns:2;column-gap:40px}
+footer li{font-size:12.5px;color:var(--muted);margin-bottom:6px;break-inside:avoid}
+footer p{font-size:12.5px;color:var(--muted);max-width:84ch}
+
+@media (max-width:880px){
+  .hero,.channel,.market{grid-template-columns:1fr}
+  .journey,.model,.ods,.team{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat,.stat.wide{grid-column:span 1}
+  footer ol{columns:1}
+}
+@media (max-width:520px){
+  .pain-grid,.kpis{grid-template-columns:1fr}
+  .hero-stat{flex-direction:column;gap:8px}
+  .tag{display:none}
+  .btn{width:100%;justify-content:center}
+}
+@media (prefers-reduced-motion:no-preference){
+  .fill{animation:grow .9s cubic-bezier(.2,.7,.2,1) both;transform-origin:left}
+  @keyframes grow{from{transform:scaleX(.15)}to{transform:scaleX(1)}}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="mark" aria-label="CidadeViva">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" fill="var(--accent)"/><path d="m8.7 10 2.3 2.3 4.3-4.5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    CIDADEVIVA
+  </div>
+  <span class="tag">Global Solution FIAP 2026.2 · CitizenTech</span>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <span class="eyebrow">Zeladoria urbana colaborativa</span>
+    <h1>Reportou. <em>Foi protocolado.</em></h1>
+    <p class="lede">O cidadão reporta o problema da rua em 3 passos. A IA sugere o tipo, uma pessoa confere quando há dúvida e um robô registra no portal da prefeitura e devolve o protocolo para acompanhar.</p>
+
+    <div class="cta" role="group" aria-label="Acessar o projeto">
+      <a class="btn primary" id="btn-mvp" href="https://citizentech-girafas.azurewebsites.net" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Testar o MVP<small>app no ar</small></span>
+      </a>
+      <a class="btn" id="btn-repo" href="https://github.com/girafasfiap-cyber/GS_CitizenTech_MVP_Startup" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>Ver o repositório<small>código e README</small></span>
+      </a>
+      <a class="btn" id="btn-yt" href="LINK_DO_YOUTUBE" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm6 4v6l5-3-5-3Z"/></svg>
+        <span>Assistir ao pitch<small>até 5 minutos</small></span>
+      </a>
+    </div>
+
+    <div class="hero-stat">
+      <b>472.524</b>
+      <span>solicitações de zeladoria no SP156 em 2026, só nas 7 categorias que o CidadeViva cobre. 17% ainda estão abertas ou em andamento.</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="phone" role="img" aria-label="Exemplo de reporte: o cidadão escreve árvore caída, a IA sugere Árvores e áreas verdes com confiança de 62%, abaixo do limite, e o caso vai para revisão humana">
+      <div class="phone-head">
+        <div class="av"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" fill="var(--accent-ink)"/></svg></div>
+        <div><b>CidadeViva</b><small>reporte em andamento</small></div>
+      </div>
+      <div class="msgs">
+        <div class="bubble me">arvore caída · Freguesia/Brasilândia</div>
+        <div class="bubble them">
+          <div class="score"><b>62%</b><span class="pill">REVISÃO HUMANA</span></div>
+          Sugestão: <strong>Árvores e áreas verdes</strong>
+          <ul>
+            <li>Confiança abaixo do limite de 70%</li>
+            <li>Um atendente confere antes do envio</li>
+          </ul>
+        </div>
+        <div class="bubble them">
+          <span class="meta">DEPOIS DA APROVAÇÃO · ROBÔ</span>
+          O robô registra no portal da prefeitura e o protocolo aparece no seu acompanhamento.
+        </div>
+      </div>
+    </div>
+    <p class="src phone-cap">Reporte de teste real do MVP</p>
+  </div>
+</div>
+
+<!-- DOR -->
+<section aria-labelledby="dor">
+  <span class="eyebrow">O problema em números</span>
+  <h2 id="dor">A demanda existe. O que falta é o caminho entre o cidadão e o protocolo.</h2>
+  <p class="lede">O SP156 é a base pública da prefeitura de São Paulo. Ela mostra o tamanho da zeladoria, e o assessment da etapa de RPA mostra o custo de redigitar cada caso em portais sem API.</p>
+
+  <div class="pain-grid">
+    <div class="stat wide hot">
+      <span class="n">472.524</span>
+      <span class="t">solicitações de zeladoria no SP156 em 2026 nas 7 categorias do produto</span>
+      <span class="src">SP156 · Portal de Dados Abertos da PMSP (CC0)</span>
+    </div>
+    <div class="stat wide">
+      <span class="n">81.193</span>
+      <span class="t">ainda abertas ou em andamento (17%). Das demais, 82,4% já foram finalizadas</span>
+      <span class="src">SP156 · 2026</span>
+    </div>
+    <div class="stat">
+      <span class="n">~6 min</span>
+      <span class="t">para um atendente digitar uma reclamação à mão no portal legado</span>
+      <span class="src">Estimativa do grupo · assessment RPA</span>
+    </div>
+    <div class="stat">
+      <span class="n">8%</span>
+      <span class="t">de erro de digitação estimado no processo manual</span>
+      <span class="src">Estimativa do grupo · assessment RPA</span>
+    </div>
+    <div class="stat">
+      <span class="n">120 h</span>
+      <span class="t">por mês de digitação com 40 reclamações por dia, perto de 0,75 de uma pessoa</span>
+      <span class="src">Cálculo do grupo</span>
+    </div>
+  </div>
+
+  <div class="channel">
+    <div>
+      <h3>O que os cidadãos mais pedem</h3>
+      <p class="note" style="margin-top:12px">Limpeza urbana lidera com folga, seguida de árvores e áreas verdes e de pavimento. Em Itaquera, só limpeza urbana soma <strong>11.433 solicitações</strong> em 2026, o maior volume entre as subprefeituras.</p>
+      <p class="src" style="margin-top:14px">SP156 processado pelo pipeline de Big Data do projeto</p>
+    </div>
+    <div class="bars" aria-label="Solicitações por categoria no SP156 em 2026">
+      <div class="bar-row"><span class="lbl">Limpeza urbana e descarte</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v">191.770</span></div>
+      <div class="bar-row"><span class="lbl">Árvores e áreas verdes</span><div class="track"><div class="fill" style="width:56.6%"></div></div><span class="v">108.549</span></div>
+      <div class="bar-row"><span class="lbl">Pavimento e buracos</span><div class="track"><div class="fill" style="width:44.1%"></div></div><span class="v">84.540</span></div>
+      <div class="bar-row"><span class="lbl">Calçadas e acessibilidade</span><div class="track"><div class="fill quiet" style="width:21.6%"></div></div><span class="v">41.336</span></div>
+      <div class="bar-row"><span class="lbl">Drenagem</span><div class="track"><div class="fill quiet" style="width:18.2%"></div></div><span class="v">34.997</span></div>
+      <div class="bar-row"><span class="lbl">Sinalização e semáforos</span><div class="track"><div class="fill quiet" style="width:5.1%"></div></div><span class="v">9.690</span></div>
+      <div class="bar-row"><span class="lbl">Iluminação</span><div class="track"><div class="fill quiet" style="width:.9%"></div></div><span class="v">1.642</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- JORNADA -->
+<section aria-labelledby="jornada">
+  <span class="eyebrow">A solução</span>
+  <h2 id="jornada">Do relato ao protocolo, sem trocar o sistema da prefeitura</h2>
+  <p class="lede">O CidadeViva não substitui o portal legado. Ele se encaixa na frente dele: organiza o relato do cidadão e faz o robô lançar o caso, com uma pessoa no circuito quando a IA tem dúvida.</p>
+
+  <div class="journey">
+    <article class="phase">
+      <span class="when">Passo 1 · Visão Computacional</span>
+      <span class="verb">Reportar</span>
+      <p>O cidadão descreve o problema e informa o endereço por CEP, GPS ou por uma foto da conta de luz, água ou telefone. A foto é lida por OCR e o endereço vai para conferência.</p>
+      <p class="proof"><b>98,9%</b> de endereços 100% corretos em 90 faturas de teste, cerca de 2,2 s por foto</p>
+    </article>
+    <article class="phase">
+      <span class="when">Passo 2 · IA generativa</span>
+      <span class="verb">Triar</span>
+      <p>A IA sugere a categoria e redige o texto formal. Com confiança abaixo de 70%, o caso espera um atendente em <em>/admin</em> antes de seguir. A IA nunca bloqueia o reporte.</p>
+      <p class="proof"><b>7</b> categorias fixas, saída validada, CPF e telefone mascarados antes do modelo</p>
+    </article>
+    <article class="phase">
+      <span class="when">Passo 3 · RPA (UiPath)</span>
+      <span class="verb">Protocolar</span>
+      <p>O robô lê a fila aprovada, preenche o portal da prefeitura e devolve o protocolo, que aparece para o cidadão. Se um caso é rejeitado, o robô registra e segue para o próximo.</p>
+      <p class="proof"><b>~1,5 min</b> para 8 reclamações, contra cerca de 6 min cada à mão</p>
+    </article>
+  </div>
+
+  <div class="stack" aria-label="Tecnologias">
+    <span class="chip">Python · Starlette</span><span class="chip">OpenCV + Tesseract</span><span class="chip">LLM via OpenRouter</span>
+    <span class="chip">UiPath</span><span class="chip">Airflow</span><span class="chip">SQLite · PostgreSQL</span>
+    <span class="chip">Azure App Service</span><span class="chip">GitHub Actions</span><span class="chip">Application Insights</span>
+  </div>
+</section>
+
+<!-- DADOS -->
+<section aria-labelledby="dados">
+  <span class="eyebrow">Dados reais</span>
+  <h2 id="dados">O painel é alimentado por um pipeline de dados de verdade</h2>
+  <p class="lede">Um pipeline Airflow lê o histórico do SP156 pela API do portal (com os arquivos CSV como reserva) e também os reportes do app, valida a qualidade e carrega um Data Warehouse. O painel público do MVP mostra o resultado.</p>
+
+  <div class="kpis">
+    <div><b>472.524</b><span>solicitações reais carregadas no Data Warehouse</span></div>
+    <div><b>10</b><span>tarefas na DAG do Airflow, todas executadas com sucesso</span></div>
+    <div><b>19</b><span>verificações de qualidade de dados, incluindo ausência de PII</span></div>
+    <div><b>0</b><span>nome ou e-mail do cidadão guardados: o usuário é um código aleatório</span></div>
+  </div>
+</section>
+
+<!-- REAL X SIMULADO -->
+<section aria-labelledby="real">
+  <span class="eyebrow">Transparência</span>
+  <h2 id="real">O que é real e o que é simulado neste MVP</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">Componente</th><th scope="col">Situação</th><th scope="col">Detalhe</th></tr></thead>
+      <tbody>
+        <tr><td class="who">App web no Azure</td><td class="real">Real</td><td>URL pública com HTTPS, deploy automático por GitHub Actions, monitoramento no Application Insights.</td></tr>
+        <tr><td class="who">Leitura de endereço por OCR</td><td class="real">Real</td><td>Tesseract e OpenCV. A foto da conta é processada na hora e nunca é guardada.</td></tr>
+        <tr><td class="who">Triagem por IA</td><td class="real">Real</td><td>LLM via OpenRouter, com regras lexicais de reserva quando o modelo não responde.</td></tr>
+        <tr><td class="who">Pipeline e SP156</td><td class="real">Real</td><td>Dados abertos oficiais, 472.524 linhas de zeladoria.</td></tr>
+        <tr><td class="who">Portal da prefeitura</td><td class="sim">Simulado</td><td>Uma página HTML de teste faz o papel do portal legado.</td></tr>
+        <tr><td class="who">Contas de luz, água e telefone</td><td class="sim">Sintéticas</td><td>As faturas usadas nos testes de Visão foram geradas pela equipe.</td></tr>
+        <tr><td class="who">Execução do robô</td><td class="sim">Local</td><td>Roda no computador da equipe, não no Azure.</td></tr>
+        <tr><td class="who">Reportes</td><td class="sim">De teste</td><td>Ainda não há usuários reais. Os números de impacto são estimativas do grupo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="gap-note"><strong>Limites conhecidos:</strong> banco SQLite em um único app, login do atendente por chave única e subprefeitura calculada só para a cidade de São Paulo.</p>
+</section>
+
+<!-- MERCADO -->
+<section aria-labelledby="mercado">
+  <span class="eyebrow">Mercado</span>
+  <h2 id="mercado">Quem paga é a prefeitura, e o preço cabe no orçamento</h2>
+  <div class="market">
+    <div class="big">
+      <b>R$ 34,7 mi</b>
+      <span>por ano: teto teórico com os 615 municípios de 50 mil a 500 mil habitantes assinando um dos planos</span>
+      <div class="proj" role="img" aria-label="Projeção do grupo: 3 municípios no ano 1, 10 no ano 2 e 30 no ano 3">
+        <div style="height:14%"><span>3</span><i>Ano 1</i></div>
+        <div style="height:42%"><span>10</span><i>Ano 2</i></div>
+        <div style="height:100%"><span>30</span><i>Ano 3</i></div>
+      </div>
+      <p class="src" style="margin-top:44px">Municípios assinantes, projeção do grupo. Resultado mensal positivo estimado no mês 23.</p>
+    </div>
+    <div class="mkt-list">
+      <div><span class="k">337</span><p><strong>municípios</strong> de 50 a 100 mil habitantes, público do plano Essencial.</p></div>
+      <div><span class="k">278</span><p><strong>municípios</strong> de 100 a 500 mil habitantes, público do plano Completo.</p></div>
+      <div><span class="k">41</span><p><strong>municípios</strong> acima de 500 mil habitantes, atendidos sob consulta.</p></div>
+      <div><span class="k">R$ 65,5 mil</span><p>é o limite de dispensa de licitação em 2026. O plano Essencial, a <strong>R$ 34.800 por ano</strong>, fica abaixo dele.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELO -->
+<section aria-labelledby="modelo">
+  <span class="eyebrow">Modelo de negócio</span>
+  <h2 id="modelo">Assinatura mensal para a prefeitura, grátis para o cidadão</h2>
+  <div class="model">
+    <div class="plan">
+      <span class="who">Cidadão</span>
+      <span class="price">R$ 0</span>
+      <p>Reportar e acompanhar pelo código não custa nada. Mais reportes bem descritos melhoram a triagem e a base de dados da cidade.</p>
+    </div>
+    <div class="plan main">
+      <span class="who">Essencial · 50 a 100 mil hab.</span>
+      <span class="price">R$ 2.900<small> /mês</small></span>
+      <p>App, triagem por IA com revisão humana, robô para o portal da prefeitura e painel de demanda. R$ 34.800 por ano.</p>
+    </div>
+    <div class="plan">
+      <span class="who">Completo · 100 a 500 mil hab.</span>
+      <span class="price">R$ 6.900<small> /mês</small></span>
+      <p>Tudo do Essencial para cidades maiores, com mais volume de reportes e mais subprefeituras no painel. R$ 82.800 por ano.</p>
+    </div>
+  </div>
+  <p class="gap-note">Os preços são <strong>hipóteses do grupo</strong>, ainda sem validação com prefeituras.</p>
+</section>
+
+<!-- IMPACTO -->
+<section aria-labelledby="impacto">
+  <span class="eyebrow">Impacto e ODS</span>
+  <h2 id="impacto">Como medimos se a cidade está melhor</h2>
+  <p class="lede">Indicadores acompanhados pelo painel e pelo pipeline: tempo até o protocolo, percentual de reportes com protocolo, horas de digitação evitadas, taxa de revisão humana da IA e resolução por subprefeitura.</p>
+  <div class="ods">
+    <div><b>ODS 11</b><p>Cidades e comunidades sustentáveis: o cidadão participa da zeladoria e acompanha cada caso pelo protocolo.</p></div>
+    <div><b>ODS 9</b><p>Indústria, inovação e infraestrutura: integra um sistema público legado sem trocá-lo, com tecnologia aberta e de baixo custo.</p></div>
+    <div><b>ODS 10</b><p>Redução das desigualdades: reporte pelo celular, linguagem simples e endereço por foto da conta reduzem a barreira de acesso.</p></div>
+  </div>
+</section>
+
+<!-- FECHAMENTO -->
+<section class="close" aria-labelledby="fim">
+  <span class="eyebrow">Veja funcionando</span>
+  <h2 id="fim">Faça um reporte, aprove no painel e acompanhe o protocolo.</h2>
+  <p class="lede">O teste leva 5 minutos e o passo a passo está no README do repositório.</p>
+  <div class="cta">
+    <a class="btn primary" id="btn-mvp2" href="https://citizentech-girafas.azurewebsites.net" target="_blank" rel="noopener"><span>Testar o MVP</span></a>
+    <a class="btn" id="btn-repo2" href="https://github.com/girafasfiap-cyber/GS_CitizenTech_MVP_Startup" target="_blank" rel="noopener"><span>Ver o repositório</span></a>
+    <a class="btn" id="btn-yt2" href="LINK_DO_YOUTUBE" target="_blank" rel="noopener"><span>Assistir ao pitch</span></a>
+  </div>
+  <div class="team" aria-label="Equipe CitizenTech">
+    <div><b>Giovanna Franco Gaudino Rodrigues</b><span>RM553701</span></div>
+    <div><b>Rafael de Almeida Sigoli</b><span>RM554019</span></div>
+    <div><b>Rafael Jorge Del Padre</b><span>RM552765</span></div>
+  </div>
+</section>
+
+<footer>
+  <span class="eyebrow">Fontes</span>
+  <ol>
+    <li>SP156, Portal de Dados Abertos da Prefeitura de São Paulo (CC0), 1º ao 3º trimestre de 2026</li>
+    <li>IBGE, Censo Demográfico 2022, municípios por faixa de população</li>
+    <li>Decreto nº 12.807/2025, valor de dispensa de licitação em 2026</li>
+    <li>Assessment e testes de RPA, Visão e Big Data da equipe CitizenTech</li>
+  </ol>
+  <p style="margin-top:18px">Preços, projeção de municípios e resultado mensal são hipóteses do grupo, sem validação com clientes. Tempos de digitação e taxa de erro do processo manual são estimativas. Engenharia de Software, 4º ano, FIAP.</p>
+</footer>
+
+</div>
+
+<script>
+/* Se o link do YouTube ainda não foi definido, os botões de vídeo ficam desativados em vez de levar a um link quebrado.
+   Para ativar: troque LINK_DO_YOUTUBE nos dois botões (ids btn-yt e btn-yt2) pela URL do vídeo. */
+document.querySelectorAll('#btn-yt, #btn-yt2').forEach(function(a){
+  if (a.getAttribute('href') === 'LINK_DO_YOUTUBE') {
+    a.removeAttribute('href');
+    a.setAttribute('aria-disabled', 'true');
+    a.setAttribute('title', 'Vídeo em breve');
+  }
+});
+</script>
+</body>
+</html>
