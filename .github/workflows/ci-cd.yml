@@ -33,7 +33,7 @@ jobs:
       - name: Auditoria de dependências (segurança)
         run: pip-audit -r requirements.txt
       - name: Empacotar artefato
-        run: zip -r app.zip . -x ".git/*" ".github/*" "tests/*" "infra/*" "*.md" "requirements-dev.txt" "pytest.ini"
+        run: zip -r app.zip . -x ".git/*" ".github/*" "tests/*" "infra/*" "README.md" "docs/*.md" "requirements-dev.txt" "pytest.ini"
       - uses: actions/upload-artifact@v4
         with:
           name: app
