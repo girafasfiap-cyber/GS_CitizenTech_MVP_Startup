@@ -44,7 +44,7 @@ Um MVP único atravessa as sete disciplinas. Cada seção abaixo se lê sozinha 
 | Proposta de valor | Reporte em 3 passos, com endereço lido da conta de luz, água ou telefone, código de acompanhamento e protocolo da prefeitura. |
 | Arquitetura: componentes | App web (Starlette) + Visão (OCR) + triagem por IA + ponte RPA (UiPath) + pipeline de dados (Airflow) + Azure App Service com CI/CD. |
 | Fontes de dados | SP156, da Prefeitura de São Paulo (real, CC0); reportes do app; faturas sintéticas para teste de Visão. |
-| Modelos de IA | Tesseract + OpenCV (Visão); LLM via OpenRouter com reserva por regras lexicais (triagem e redação). |
+| Modelos de IA | Tesseract + OpenCV (Visão); LLM via OpenRouter (componente de IA Generativa em `app/genai`) com reserva por regras lexicais (triagem e redação). |
 | URL do MVP e repositório | Ver tabela de links acima. |
 | Indicadores de impacto | Tempo até o protocolo; % de reportes com protocolo; horas de digitação evitadas; % de revisão humana da IA; resolução por subprefeitura. |
 | ODS conectados | ODS 11 (cidades e comunidades sustentáveis), ODS 9 (inovação e infraestrutura), ODS 10 (redução das desigualdades). |
@@ -203,16 +203,21 @@ Cerca de US$ 13,94 por mês (aproximadamente US$ 167 por ano), quase tudo do pla
 
 **Disciplina:** Generative AI for Engineering
 
-**O que faz:** `app/triagem.py` classifica o relato do cidadão em uma de 7 categorias (pavimento, iluminação, limpeza urbana, árvores e áreas verdes, calçadas e acessibilidade, sinalização e semáforos, drenagem) e redige o texto formal que o robô envia à prefeitura.
+**Repositório original do componente:** https://github.com/RafaelDevProjects/cidadeviva-ai (53 testes, evidências com modelo real e casos de borda).
 
-**Como decide:** com `OPENROUTER_API_KEY`, usa um LLM via OpenRouter (modelo em `OPENROUTER_MODEL`, padrão `meta-llama/llama-3.3-70b-instruct:free`). Sem a chave, ou se o modelo falhar, usa regras lexicais (`regras-v1`). Em ambos os casos a resposta traz a categoria, a confiança e o modelo usado.
+**O que faz:** `app/triagem.py` classifica o relato do cidadão em uma das 7 categorias do SP156 (pavimento, iluminação, limpeza urbana, árvores e áreas verdes, calçadas e acessibilidade, sinalização e semáforos, drenagem) e redige o texto formal que o robô envia à prefeitura. Além da categoria, o componente devolve prioridade, risco imediato, órgão responsável e dados que faltam.
+
+**Como entra no MVP:** o código do componente está em `app/genai/` (prompt versionado com exemplos, saída JSON validada por schema, até 2 reparos, fallback de modelo, guardrails e resposta segura). `app/triagem.py` o chama e traduz a taxonomia dele para as categorias do banco (`MAPA_GENAI`); categorias sem equivalente (água e esgoto, estrada rural, outro) vão para revisão humana. O mesmo código roda em `POST /api/triagem` e, de novo, ao gravar o reporte em `POST /api/reportes` (a segunda chamada sai do cache).
+
+**Como decide:** com `OPENROUTER_API_KEY`, usa o componente de IA Generativa via OpenRouter (modelo em `OPENROUTER_MODEL`). Sem a chave, se a IA passar de `LLM_TIMEOUT` segundos (padrão 15) ou se devolver a resposta de contingência, usa regras lexicais (`regras-v1`). A resposta sempre traz categoria, confiança e modelo usado.
 
 **IA responsável:**
-- A descrição do cidadão é tratada como dado, e não como instrução (defesa contra injeção de prompt).
-- A saída é validada contra a lista fixa de categorias.
+- A descrição do cidadão é tratada como dado, e não como instrução: delimitadores no prompt e regra explícita contra injeção.
+- A saída é validada por schema e contra a lista fixa de categorias.
 - CPF, telefone e e-mail são mascarados antes de qualquer texto sair para o LLM.
-- **Pessoa no circuito:** confiança abaixo de 0,70 (`LIMIAR_CONFIANCA_IA`) manda o reporte para revisão do atendente antes do envio à prefeitura. A IA nunca bloqueia o reporte do cidadão.
-- Limitação: usamos um modelo gratuito e não medimos viés por região ou forma de escrever; a revisão humana é a mitigação.
+- A prioridade depende de risco e impacto, e o prompt proíbe usar bairro, renda ou perfil.
+- **Pessoa no circuito:** confiança abaixo de 0,70 (`LIMIAR_CONFIANCA_IA`), categoria sem equivalente ou revisão pedida pela IA mandam o reporte para o atendente antes do envio à prefeitura. A IA nunca bloqueia o reporte do cidadão.
+- Limitação: usamos modelos gratuitos, a confiança que o modelo declara não é calibrada, e não medimos viés por região.
 
 **Como verificar:** descreva "buraco grande no meio da rua" e veja a sugestão automática; descreva algo vago ("tem um problema aí") e veja o aviso de revisão.
 
@@ -298,5 +303,4 @@ infra/           script de criação dos recursos no Azure
 .github/         workflows de CI/CD, CodeQL e Dependabot
 docs/            página de apresentação e PDF do pitch
 startup.sh       alternativa de partida em arquivo (o App Service usa o comando de arranque da tabela acima)
-
 ```
