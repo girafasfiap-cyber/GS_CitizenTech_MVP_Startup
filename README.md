@@ -17,7 +17,7 @@ Global Solution FIAP 2026.2 · CitizenTech · Engenharia de Software, 4º ano ·
 | **MVP no ar** | https://citizentech-girafas.azurewebsites.net |
 | **Repositório principal** | https://github.com/girafasfiap-cyber/GS_CitizenTech_MVP_Startup |
 | **Página de apresentação** | https://girafasfiap-cyber.github.io/GS_CitizenTech_MVP_Startup/ |
-| **Vídeo do pitch** | _(link a incluir)_ |
+| **Vídeo do pitch** |https://youtu.be/YpBby8u-OF8 |
 | **Pitch e modelo de negócio (PDF)** | [docs/CidadeViva_Startup_Pitch_MVP.pdf](docs/CidadeViva_Startup_Pitch_MVP.pdf) |
 
 ## Ir direto para a sua disciplina
